@@ -3,383 +3,724 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Biofeedback Binaural</title>
+    <title>Biofeedback dual · Completo</title>
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0f1e;
-            color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            box-sizing: border-box;
+            background: #0a0e1a;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            touch-action: pan-x pan-y;
         }
-        .container {
-            max-width: 500px;
+        .card {
+            max-width: 550px;
             width: 100%;
-            background: #1a1f2f;
-            border-radius: 30px;
-            padding: 30px 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            border: 1px solid #2a2f3f;
+            background: #141a2b;
+            border-radius: 48px;
+            padding: 20px 15px 25px;
+            box-shadow: 0 25px 50px -8px black;
+            border: 1px solid #2f3853;
         }
         h1 {
             text-align: center;
-            font-size: 2em;
-            margin-top: 0;
-            color: #00d4ff;
-            text-shadow: 0 0 10px #00d4ff66;
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin: 0 0 5px;
+            color: #b1e5ff;
         }
-        .button {
-            background: #00d4ff;
-            border: none;
-            color: #0a0f1e;
-            font-size: 2em;
-            font-weight: bold;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            margin: 30px auto;
-            display: block;
-            cursor: pointer;
-            box-shadow: 0 10px 20px #00d4ff66;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 4px solid #ffffff88;
-        }
-        .button:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 10px #00d4ff66;
-        }
-        .timer {
-            font-size: 4em;
-            font-family: monospace;
+        .sub {
             text-align: center;
-            margin: 20px 0;
-            color: #00d4ff;
-            text-shadow: 0 0 15px #00d4ff;
+            color: #7b8bb0;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
         }
-        .status {
-            text-align: center;
-            font-size: 1.2em;
-            margin: 15px 0;
-            color: #aaa;
-        }
-        .indicators {
+        .row {
             display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
+            gap: 10px;
+            justify-content: center;
             flex-wrap: wrap;
         }
-        .indicator {
-            background: #0f1424;
-            border-radius: 20px;
-            padding: 15px;
-            min-width: 120px;
-            margin: 5px;
-            text-align: center;
-            border-left: 4px solid #00d4ff;
+        .touch-zone {
+            width: 150px;
+            height: 150px;
+            background: #1f2845;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #415479;
+            box-shadow: 0 0 0 2px #00c8ff80;
+            touch-action: none;
+            cursor: pointer;
+            transition: border-color 0.1s;
+            margin: 0 auto;
         }
-        .indicator .label {
-            font-size: 0.9em;
-            color: #aaa;
+        .touch-zone.active {
+            border-color: #00ffc3;
+            background: #2a3560;
+        }
+        .touch-zone span {
+            color: #b8c7ff;
+            font-size: 1rem;
+            font-weight: 500;
+            pointer-events: none;
+            text-align: center;
+        }
+        .indicator-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .pill {
+            background: #1f2747;
+            border-radius: 40px;
+            padding: 10px 5px;
+            text-align: center;
+            border-left: 4px solid #00c8ff;
+        }
+        .pill .label {
+            font-size: 0.65rem;
+            color: #a3b6e0;
             text-transform: uppercase;
         }
-        .indicator .value {
-            font-size: 2em;
+        .pill .value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #00f0ff;
+            line-height: 1.2;
+        }
+        .pill .unit {
+            font-size: 0.75rem;
+            color: #8d9fd0;
+            margin-left: 2px;
+        }
+        .canvas-container {
+            background: #0f1626;
+            border-radius: 24px;
+            padding: 12px 10px;
+            margin: 10px 0;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+            background: #0b101f;
+            border-radius: 12px;
+        }
+        .legend {
+            display: flex;
+            justify-content: space-between;
+            color: #6e82af;
+            font-size: 0.7rem;
+            padding: 0 5px;
+            margin-top: 4px;
+        }
+        .button {
+            background: #00c8ff;
+            border: none;
+            color: #0b0e1a;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #00d4ff;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: block;
+            cursor: pointer;
+            box-shadow: 0 8px 20px #00c8ff99;
+            border: 3px solid white;
+        }
+        .timer {
+            font-size: 2.5rem;
+            font-family: monospace;
+            text-align: center;
+            color: #00e5ff;
         }
         .export-btn {
-            background: #2a2f3f;
-            border: 1px solid #00d4ff;
-            color: #00d4ff;
-            font-size: 1.2em;
-            padding: 15px 25px;
-            border-radius: 50px;
+            background: #262f4f;
+            border: 1px solid #00c8ff;
+            color: #00c8ff;
+            font-size: 1rem;
+            padding: 12px;
+            border-radius: 60px;
             width: 100%;
             cursor: pointer;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .export-btn:active {
-            background: #00d4ff22;
+            margin-top: 15px;
         }
         .footer {
+            color: #5d6f98;
+            font-size: 0.7rem;
             text-align: center;
-            margin-top: 20px;
-            color: #555;
-            font-size: 0.8em;
+            margin-top: 10px;
         }
-        @media (max-width: 400px) {
-            .button {
-                width: 150px;
-                height: 150px;
-                font-size: 1.5em;
-            }
-            .timer {
-                font-size: 3em;
-            }
+        .apnea-alert {
+            background: #ff3366;
+            color: white;
+            border-radius: 30px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 5px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🧠 Binaural Bio</h1>
+    <div class="card">
+        <h1>🧠 Dual Bio + HRV</h1>
+        <div class="sub">Pecho + dedo · autocalibración · apnea · aprendizaje</div>
 
-        <div id="playPauseBtn" class="button">▶</div>
-
-        <div class="timer" id="timer">00:00</div>
-        <div class="status" id="status">Esperando inicio</div>
-
-        <div class="indicators">
-            <div class="indicator">
-                <div class="label">Latidos</div>
-                <div class="value" id="bpm">--</div>
-            </div>
-            <div class="indicator">
-                <div class="label">Respiración</div>
-                <div class="value" id="rpm">--</div>
-            </div>
-            <div class="indicator">
-                <div class="label">Binaural</div>
-                <div class="value" id="binaural">--</div>
+        <div class="row">
+            <div class="touch-zone" id="touchZone">
+                <span>coloca<br>el dedo</span>
             </div>
         </div>
 
+        <div class="indicator-grid">
+            <div class="pill"><span class="label">Pecho (BPM)</span><span class="value" id="bpmChest">--</span></div>
+            <div class="pill"><span class="label">Dedo (BPM)</span><span class="value" id="bpmTouch">--</span></div>
+            <div class="pill"><span class="label">Fusión</span><span class="value" id="bpmFusion">--</span></div>
+            <div class="pill"><span class="label">Respiración</span><span class="value" id="respRate">--</span><span class="unit">RPM</span></div>
+            <div class="pill"><span class="label">HRV (RMSSD)</span><span class="value" id="hrvValue">--</span><span class="unit">ms</span></div>
+            <div class="pill"><span class="label">Binaural</span><span class="value" id="binauralFreq">--</span><span class="unit">Hz</span></div>
+            <div class="pill"><span class="label">Coherencia</span><span class="value" id="coherence">--</span><span class="unit">%</span></div>
+            <div class="pill"><span class="label">Apnea</span><span class="value" id="apneaCount">0</span></div>
+            <div class="pill"><span class="label">Confianza</span><span class="value" id="confidence">--</span><span class="unit">%</span></div>
+        </div>
+
+        <div id="apneaAlert" class="apnea-alert" style="display:none;">⚠️ APNEA DETECTADA</div>
+
+        <div class="canvas-container">
+            <canvas id="respCanvas" width="400" height="100"></canvas>
+            <div class="legend">
+                <span>Señal respiratoria filtrada</span>
+                <span>Umbral adaptativo</span>
+            </div>
+        </div>
+
+        <button class="button" id="playPauseBtn">▶</button>
+        <div class="timer" id="timer">00:00</div>
+
         <button class="export-btn" id="exportBtn">📥 Exportar CSV</button>
-        <div class="footer">Coloca el teléfono sobre el pecho (pantalla arriba)</div>
+        <div class="footer">Vibración: inhalación larga + latido · datos guardados localmente</div>
     </div>
 
     <script>
-        // ==================== CONFIGURACIÓN ====================
-        const SAMPLE_RATE = 100; // Hz (aproximado, depende del dispositivo)
-        const MIN_BEAT_INTERVAL = 300; // ms (200 bpm máximo)
-        const BREATH_ALPHA = 0.05; // filtro para respiración
-        const HEART_ALPHA = 0.8;   // filtro pasa altos para latidos
+        // ========== CONFIGURACIÓN GLOBAL ==========
+        const TARGET_RPM = 6;                      // respiraciones por minuto guiadas (se puede ajustar)
+        const INHALE_FRACTION = 0.4;                // 40% inhalación
+        const MIN_BEAT_INTERVAL = 300;              // ms mínimo entre latidos (200 bpm)
+        const PEAK_PROMINENCE = 1.8;                 // factor para umbral de picos
+        const BUFFER_SIZE = 150;                     // tamaño de buffer para señales (~1.5s a 100Hz)
 
-        // ==================== VARIABLES GLOBALES ====================
+        // Parámetros para HRV
+        const HRV_WINDOW = 30;                        // segundos para cálculo de HRV
+        const APNEA_THRESHOLD_SEC = 10;               // segundos sin respiración para alerta
+
+        // Clave para localStorage (aprendizaje)
+        const STORAGE_KEY = 'biofeedback_user_profile';
+
+        // ========== CLASE DETECTOR DE RESPIRACIÓN ADAPTATIVO ==========
+        class AdaptiveBreathDetector {
+            constructor(windowSeconds = 30, sampleRate = 100, userId = 'default') {
+                this.windowSize = windowSeconds * sampleRate;
+                this.buffer = [];
+                this.lastPeakTime = 0;
+                this.intervals = [];
+                this.rpm = 0;
+                this.apneaTimer = null;
+                this.apneaCount = 0;
+                this.userId = userId;
+                this.loadProfile();  // carga percentiles guardados
+                this.percentileLow = this.savedLow || 5;
+                this.percentileHigh = this.savedHigh || 95;
+                this.minIntervalMs = 2000;   // 30 rpm max
+                this.maxIntervalMs = 10000;   // 6 rpm min
+                this.signalForCanvas = [];    // para dibujar
+            }
+
+            // Guardar perfil en localStorage
+            saveProfile() {
+                const profile = {
+                    low: this.percentileLow,
+                    high: this.percentileHigh,
+                    userId: this.userId
+                };
+                localStorage.setItem(STORAGE_KEY + '_' + this.userId, JSON.stringify(profile));
+            }
+
+            // Cargar perfil
+            loadProfile() {
+                const stored = localStorage.getItem(STORAGE_KEY + '_' + this.userId);
+                if (stored) {
+                    const p = JSON.parse(stored);
+                    this.savedLow = p.low;
+                    this.savedHigh = p.high;
+                } else {
+                    this.savedLow = 5;
+                    this.savedHigh = 95;
+                }
+            }
+
+            // Calcular percentil
+            percentile(arr, p) {
+                if (arr.length === 0) return 0;
+                const sorted = [...arr].sort((a, b) => a - b);
+                const index = (p / 100) * (sorted.length - 1);
+                const lower = Math.floor(index);
+                const upper = Math.ceil(index);
+                if (lower === upper) return sorted[lower];
+                return sorted[lower] * (upper - index) + sorted[upper] * (index - lower);
+            }
+
+            addSample(value, timestamp) {
+                this.buffer.push(value);
+                if (this.buffer.length > this.windowSize) this.buffer.shift();
+
+                // Actualizar buffer para canvas
+                this.signalForCanvas.push(value);
+                if (this.signalForCanvas.length > 200) this.signalForCanvas.shift();
+
+                if (this.buffer.length < this.windowSize / 3) return null;
+
+                // Recalcular percentiles periódicamente (cada 100 muestras)
+                if (this.buffer.length % 100 === 0) {
+                    this.percentileLow = this.percentile(this.buffer, 5);
+                    this.percentileHigh = this.percentile(this.buffer, 95);
+                    this.saveProfile();  // aprendizaje continuo
+                }
+
+                const low = this.percentileLow;
+                const high = this.percentileHigh;
+                const range = high - low;
+                if (range < 0.01) return null;
+
+                const threshold = low + 0.8 * range;
+
+                // Detección de pico
+                if (value > threshold && value > (this.buffer[this.buffer.length - 2] || 0)) {
+                    const sinceLast = timestamp - this.lastPeakTime;
+                    if (this.lastPeakTime > 0 && sinceLast > this.minIntervalMs && sinceLast < this.maxIntervalMs) {
+                        this.intervals.push(sinceLast);
+                        if (this.intervals.length > 5) this.intervals.shift();
+
+                        const avg = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
+                        this.rpm = Math.round(60000 / avg);
+
+                        // Resetear alerta de apnea
+                        if (this.apneaTimer) {
+                            clearTimeout(this.apneaTimer);
+                            this.apneaTimer = null;
+                        }
+                    }
+                    this.lastPeakTime = timestamp;
+                }
+
+                // Detección de apnea (si pasa demasiado tiempo sin pico)
+                if (this.lastPeakTime > 0 && !this.apneaTimer) {
+                    const timeSinceLast = timestamp - this.lastPeakTime;
+                    if (timeSinceLast > APNEA_THRESHOLD_SEC * 1000) {
+                        this.apneaCount++;
+                        this.apneaTimer = setTimeout(() => {
+                            // Mostrar alerta (se maneja desde fuera)
+                            this.apneaTimer = null;
+                        }, 100);
+                    }
+                }
+
+                return this.rpm;
+            }
+
+            getApneaStatus() {
+                return {
+                    count: this.apneaCount,
+                    active: this.lastPeakTime > 0 && (Date.now() - this.lastPeakTime) > APNEA_THRESHOLD_SEC * 1000
+                };
+            }
+
+            getThreshold() {
+                if (this.buffer.length < 10) return 0;
+                const low = this.percentileLow;
+                const high = this.percentileHigh;
+                const range = high - low;
+                return low + 0.8 * range;
+            }
+        }
+
+        // ========== CLASE DETECTOR DE LATIDOS (GENÉRICA) ==========
+        class BeatDetector {
+            constructor(sourceName) {
+                this.buffer = [];
+                this.lastPeak = 0;
+                this.intervals = [];
+                this.bpm = 0;
+                this.source = sourceName;
+                this.peakTimes = [];  // para HRV
+            }
+
+            addSample(value, timestamp) {
+                this.buffer.push(value);
+                if (this.buffer.length > BUFFER_SIZE) this.buffer.shift();
+                if (this.buffer.length < 30) return null;
+
+                const mean = this.buffer.reduce((a, b) => a + b, 0) / this.buffer.length;
+                const std = Math.sqrt(this.buffer.map(v => (v - mean) ** 2).reduce((a, b) => a + b, 0) / this.buffer.length);
+                const threshold = mean + PEAK_PROMINENCE * std;
+
+                if (value > threshold) {
+                    const sinceLast = timestamp - this.lastPeak;
+                    if (sinceLast > MIN_BEAT_INTERVAL && this.lastPeak > 0) {
+                        this.intervals.push(sinceLast);
+                        if (this.intervals.length > 5) this.intervals.shift();
+
+                        const avg = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
+                        this.bpm = Math.round(60000 / avg);
+                        this.peakTimes.push(timestamp);
+                        // Mantener ventana para HRV
+                        if (this.peakTimes.length > HRV_WINDOW) this.peakTimes.shift();
+
+                        this.lastPeak = timestamp;
+                        return this.bpm;
+                    }
+                    this.lastPeak = timestamp;
+                }
+                return null;
+            }
+
+            // Calcular HRV (RMSSD) sobre la ventana actual
+            getHRV() {
+                if (this.peakTimes.length < 3) return 0;
+                let sumSq = 0;
+                for (let i = 1; i < this.peakTimes.length; i++) {
+                    const diff = this.peakTimes[i] - this.peakTimes[i-1];
+                    sumSq += diff * diff;
+                }
+                const rmssd = Math.sqrt(sumSq / (this.peakTimes.length - 1));
+                return Math.round(rmssd * 10) / 10; // en ms
+            }
+
+            // Confianza: basada en estabilidad de intervalos
+            getConfidence() {
+                if (this.intervals.length < 3) return 0;
+                const avg = this.intervals.reduce((a, b) => a + b, 0) / this.intervals.length;
+                const variacion = this.intervals.map(i => Math.abs(i - avg)).reduce((a, b) => a + b, 0) / avg;
+                return Math.max(0, Math.min(100, Math.round(100 * (1 - variacion / 0.5))));
+            }
+        }
+
+        // ========== INSTANCIAS GLOBALES ==========
+        const chestDetector = new BeatDetector('acelerómetro');
+        const touchDetector = new BeatDetector('táctil');
+        const breathDetector = new AdaptiveBreathDetector(30, 100, 'usuario1');
+
+        // ========== VARIABLES DE ESTADO ==========
         let isPlaying = false;
-        let sessionStartTime = null;
+        let sessionStart = null;
         let timerInterval = null;
-        let lastAccelZ = null;
-        let prevFilteredZ = 0;
-        let prevHeartZ = 0;
-
-        // Buffers para detección
-        const heartBuffer = [];
-        const HEART_BUFFER_SIZE = 200; // 2 segundos a 100 Hz
-        let lastBeatTime = 0;
-        const beatIntervals = [];
-
-        // Respiración
-        let breathFiltered = 0;
-        let lastBreathPeak = 0;
-        let rpm = 0;
-
-        // Datos para CSV
-        let csvData = [];
-        const csvHeaders = ['timestamp', 'heartRateBPM', 'rpm', 'binauralFreq', 'accelZ'];
-
-        // Audio
         let audioCtx = null;
-        let oscillatorLeft = null;
-        let oscillatorRight = null;
-        let gainNode = null;
-        let binauralFreq = 5; // Hz inicial
+        let oscL = null, oscR = null, gain = null;
+        let binauralFreq = 5;
+        let lastFusionBpm = 0;
+        let csvData = [];
+        const CSV_HEADERS = ['timestamp', 'bpmChest', 'bpmTouch', 'bpmFusion', 'rpm', 'hrv', 'binauralHz', 'apneaCount', 'confidence', 'touchArea', 'accelZ'];
 
         // Elementos DOM
-        const playPauseBtn = document.getElementById('playPauseBtn');
+        const touchZone = document.getElementById('touchZone');
+        const bpmChestEl = document.getElementById('bpmChest');
+        const bpmTouchEl = document.getElementById('bpmTouch');
+        const bpmFusionEl = document.getElementById('bpmFusion');
+        const respRateEl = document.getElementById('respRate');
+        const hrvValueEl = document.getElementById('hrvValue');
+        const binauralEl = document.getElementById('binauralFreq');
+        const coherenceEl = document.getElementById('coherence');
+        const apneaCountEl = document.getElementById('apneaCount');
+        const confidenceEl = document.getElementById('confidence');
+        const apneaAlertDiv = document.getElementById('apneaAlert');
+        const playBtn = document.getElementById('playPauseBtn');
         const timerEl = document.getElementById('timer');
-        const statusEl = document.getElementById('status');
-        const bpmEl = document.getElementById('bpm');
-        const rpmEl = document.getElementById('rpm');
-        const binauralEl = document.getElementById('binaural');
         const exportBtn = document.getElementById('exportBtn');
+        const respCanvas = document.getElementById('respCanvas');
+        const ctx = respCanvas.getContext('2d');
 
-        // ==================== FUNCIONES DE AUDIO ====================
+        // ========== AUDIO ==========
         function initAudio() {
             if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            gainNode = audioCtx.createGain();
-            gainNode.gain.value = 0.1; // volumen suave
-            gainNode.connect(audioCtx.destination);
+            gain = audioCtx.createGain();
+            gain.gain.value = 0.1;
+            gain.connect(audioCtx.destination);
         }
 
         function startBinaural(freq) {
             if (!audioCtx) initAudio();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            if (oscillatorLeft) oscillatorLeft.stop();
-            if (oscillatorRight) oscillatorRight.stop();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (oscL) oscL.stop();
+            if (oscR) oscR.stop();
 
-            const now = audioCtx.currentTime;
+            oscL = audioCtx.createOscillator();
+            oscL.type = 'sine';
+            oscL.frequency.value = 200;
 
-            oscillatorLeft = audioCtx.createOscillator();
-            oscillatorLeft.type = 'sine';
-            oscillatorLeft.frequency.value = 200; // frecuencia portadora izquierda
+            oscR = audioCtx.createOscillator();
+            oscR.type = 'sine';
+            oscR.frequency.value = 200 + freq;
 
-            oscillatorRight = audioCtx.createOscillator();
-            oscillatorRight.type = 'sine';
-            oscillatorRight.frequency.value = 200 + freq; // frecuencia derecha
-
-            oscillatorLeft.connect(gainNode);
-            oscillatorRight.connect(gainNode);
-
-            oscillatorLeft.start(now);
-            oscillatorRight.start(now);
+            oscL.connect(gain);
+            oscR.connect(gain);
+            oscL.start();
+            oscR.start();
         }
 
         function updateBinaural(freq) {
             binauralFreq = freq;
-            if (oscillatorLeft && oscillatorRight) {
-                oscillatorLeft.frequency.value = 200;
-                oscillatorRight.frequency.value = 200 + freq;
+            if (oscL && oscR) {
+                oscL.frequency.value = 200;
+                oscR.frequency.value = 200 + freq;
             }
+            binauralEl.textContent = freq.toFixed(1);
         }
 
-        function stopBinaural() {
-            if (oscillatorLeft) {
-                oscillatorLeft.stop();
-                oscillatorLeft = null;
-            }
-            if (oscillatorRight) {
-                oscillatorRight.stop();
-                oscillatorRight = null;
-            }
+        function stopAudio() {
+            if (oscL) oscL.stop();
+            if (oscR) oscR.stop();
+            oscL = oscR = null;
         }
 
-        // ==================== VIBRACIÓN ====================
-        function vibrateBeat(strength) {
-            if (navigator.vibrate) {
-                const duration = 80 + Math.floor(strength * 50);
-                navigator.vibrate(duration);
-            }
+        // ========== VIBRACIÓN DUAL ==========
+        let vibrationTimer = null;
+
+        function startVibration() {
+            if (!navigator.vibrate) return;
+            const cycleMs = 60000 / TARGET_RPM;
+            const inhaleMs = cycleMs * INHALE_FRACTION;
+            const exhaleMs = cycleMs - inhaleMs;
+
+            vibrationTimer = setInterval(() => {
+                if (!isPlaying) return;
+                navigator.vibrate([inhaleMs, exhaleMs]);
+            }, cycleMs);
         }
 
-        // ==================== LEY DE WINTER (EJEMPLO) ====================
-        function winterLaw(heartRate, respRate, sessionTimeSec) {
-            // Reemplaza con tu fórmula real
-            if (sessionTimeSec < 120) return 10; // Alpha
-            if (sessionTimeSec < 300) return 6;  // Theta
-            return 3; // Delta
+        function triggerBeatVibration() {
+            if (!isPlaying || !navigator.vibrate) return;
+            // Golpe corto (no interrumpe el patrón largo porque el navegador encola)
+            navigator.vibrate(80);
         }
 
-        // ==================== DETECCIÓN DE LATIDOS ====================
-        function processHeart(z, timestamp) {
-            // Filtro pasa altos simple
-            const heartAC = z - (HEART_ALPHA * prevHeartZ + (1 - HEART_ALPHA) * z);
-            prevHeartZ = z;
+        function stopVibration() {
+            if (vibrationTimer) clearInterval(vibrationTimer);
+            if (navigator.vibrate) navigator.vibrate(0);
+        }
 
-            heartBuffer.push(heartAC);
-            if (heartBuffer.length > HEART_BUFFER_SIZE) heartBuffer.shift();
+        // ========== LEY DE WINTER (PERSONALIZABLE) ==========
+        function winterLaw(bpm, hrv, rpm, sessionSec) {
+            // Fórmula de ejemplo: combina BPM normalizado, HRV y RPM para dar frecuencia en rango 1-15 Hz
+            const bpmNorm = Math.min(1, Math.max(0, (bpm - 50) / 70)); // 50-120 bpm
+            const hrvNorm = Math.min(1, hrv / 100); // asume HRV hasta 100 ms
+            const rpmNorm = Math.min(1, rpm / 20);
+            // Fase de la sesión: más relajación al final
+            const timeFactor = Math.min(1, sessionSec / 600); // 10 minutos para llegar a 1
+            // Frecuencia base: 10 Hz al inicio, baja a 3 Hz al final si está relajado
+            const base = 10 - 7 * timeFactor * (0.5 + 0.5 * (1 - bpmNorm) * hrvNorm);
+            // Modulación por respiración
+            const mod = 2 * (rpmNorm - 0.3);
+            return Math.min(15, Math.max(1, base + mod));
+        }
 
-            if (heartBuffer.length < 50) return null; // necesitamos suficientes datos
+        // ========== CÁLCULO DE COHERENCIA ==========
+        function calculateCoherence(hrv, rpm, targetRpm) {
+            // Coherencia alta cuando HRV es alto y RPM cerca del objetivo
+            const rpmDiff = Math.abs(rpm - targetRpm) / targetRpm;
+            const hrvScore = Math.min(1, hrv / 80);
+            const rpmScore = Math.max(0, 1 - rpmDiff);
+            return Math.round(100 * (0.6 * hrvScore + 0.4 * rpmScore));
+        }
 
-            // Calcular media y desviación
-            const mean = heartBuffer.reduce((a, b) => a + b, 0) / heartBuffer.length;
-            const std = Math.sqrt(heartBuffer.map(v => (v - mean) ** 2).reduce((a, b) => a + b, 0) / heartBuffer.length);
-            const threshold = mean + 1.8 * std;
-
-            if (heartAC > threshold) {
-                const timeSinceLast = timestamp - lastBeatTime;
-                if (timeSinceLast > MIN_BEAT_INTERVAL && lastBeatTime > 0) {
-                    beatIntervals.push(timeSinceLast);
-                    if (beatIntervals.length > 5) beatIntervals.shift();
-
-                    const avgInterval = beatIntervals.reduce((a, b) => a + b, 0) / beatIntervals.length;
-                    const bpm = Math.round(60000 / avgInterval);
-                    const strength = Math.min(1, (heartAC - mean) / (3 * std));
-
-                    lastBeatTime = timestamp;
-                    return { bpm, strength, interval: timeSinceLast };
-                }
-                lastBeatTime = timestamp;
+        // ========== FUSIÓN DE LATIDOS ==========
+        function fuseBeats(bpmChest, bpmTouch, confChest, confTouch) {
+            if (bpmChest && bpmTouch) {
+                // Ponderar por confianza
+                const totalConf = confChest + confTouch;
+                if (totalConf === 0) return Math.round((bpmChest + bpmTouch) / 2);
+                return Math.round((bpmChest * confChest + bpmTouch * confTouch) / totalConf);
+            } else if (bpmChest) {
+                return bpmChest;
+            } else if (bpmTouch) {
+                return bpmTouch;
             }
             return null;
         }
 
-        // ==================== DETECCIÓN DE RESPIRACIÓN ====================
-        function processBreath(z, timestamp) {
-            breathFiltered = BREATH_ALPHA * z + (1 - BREATH_ALPHA) * breathFiltered;
+        // ========== DIBUJAR SEÑAL RESPIRATORIA ==========
+        function drawRespiratorySignal() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, respCanvas.width, respCanvas.height);
+            const w = respCanvas.width;
+            const h = respCanvas.height;
 
-            // Detección de picos (inhalación)
-            if (breathFiltered > 0.3) { // umbral arbitrario, se puede ajustar
-                const timeSinceLast = timestamp - lastBreathPeak;
-                if (timeSinceLast > 500 && lastBreathPeak > 0) {
-                    const periodSec = timeSinceLast / 1000;
-                    rpm = Math.round(60 / periodSec);
-                }
-                lastBreathPeak = timestamp;
+            // Dibujar señal filtrada
+            const signal = breathDetector.signalForCanvas;
+            if (signal.length < 2) return;
+
+            const step = w / 200; // máximo 200 puntos
+
+            // Normalizar a la altura del canvas (con margen)
+            const maxVal = Math.max(...signal, 0.1);
+            const minVal = Math.min(...signal, 0);
+            const range = maxVal - minVal || 1;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < signal.length; i++) {
+                const x = i * step;
+                const y = h - 20 - ((signal[i] - minVal) / range) * (h - 40);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
-            return rpm;
+            ctx.stroke();
+
+            // Dibujar umbral adaptativo
+            const threshold = breathDetector.getThreshold();
+            if (threshold > 0) {
+                const yTh = h - 20 - ((threshold - minVal) / range) * (h - 40);
+                ctx.beginPath();
+                ctx.strokeStyle = '#ffaa00';
+                ctx.setLineDash([5, 3]);
+                ctx.moveTo(0, yTh);
+                ctx.lineTo(w, yTh);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
         }
 
-        // ==================== MANEJO DE SENSORES ====================
+        // ========== MANEJO DE SENSORES ==========
         function handleMotion(event) {
             if (!isPlaying) return;
-
             const accel = event.accelerationIncludingGravity;
             if (!accel) return;
-
-            const z = accel.z || 0; // Eje perpendicular al pecho
-            if (lastAccelZ === null) {
-                lastAccelZ = z;
-                return;
-            }
-
+            const z = accel.z || 0;
             const timestamp = Date.now();
-            const sessionTimeSec = (timestamp - sessionStartTime) / 1000;
 
-            // Detectar latido
-            const beat = processHeart(z, timestamp);
-            if (beat) {
-                bpmEl.textContent = beat.bpm;
-                vibrateBeat(beat.strength);
-
-                // Actualizar frecuencia binaural con Ley de Winter
-                const newFreq = winterLaw(beat.bpm, rpm, sessionTimeSec);
-                updateBinaural(newFreq);
-                binauralEl.textContent = newFreq.toFixed(1);
-
-                // Guardar en CSV
-                csvData.push({
-                    timestamp: new Date(timestamp).toISOString(),
-                    heartRateBPM: beat.bpm,
-                    rpm: rpm,
-                    binauralFreq: newFreq,
-                    accelZ: z.toFixed(3)
-                });
+            // Latido por acelerómetro
+            const bpmC = chestDetector.addSample(z, timestamp);
+            if (bpmC) {
+                bpmChestEl.textContent = bpmC;
             }
 
-            // Detectar respiración
-            const currentRPM = processBreath(z, timestamp);
-            if (currentRPM > 0) {
-                rpmEl.textContent = currentRPM;
+            // Respiración
+            const rpm = breathDetector.addSample(z, timestamp);
+            if (rpm) {
+                respRateEl.textContent = rpm;
             }
 
-            lastAccelZ = z;
+            // Apnea
+            const apnea = breathDetector.getApneaStatus();
+            apneaCountEl.textContent = apnea.count;
+            apneaAlertDiv.style.display = apnea.active ? 'block' : 'none';
+
+            // Actualizar gráfica cada cierto tiempo (no en cada sample)
+            if (timestamp % 200 < 20) drawRespiratorySignal();
+
+            // No guardamos CSV aquí, lo hacemos en el evento táctil o cada cierto tiempo
         }
 
-        // ==================== INICIAR/DETENER SESIÓN ====================
+        // ========== EVENTOS TÁCTILES ==========
+        let lastTouchArea = 0;
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (!isPlaying) return;
+            const touch = e.touches[0];
+            if (!touch) return;
+            const area = (touch.radiusX && touch.radiusY) ? Math.PI * touch.radiusX * touch.radiusY : 100;
+            lastTouchArea = area;
+            touchZone.classList.add('active');
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!isPlaying) return;
+            const touch = e.touches[0];
+            if (!touch) return;
+            const area = (touch.radiusX && touch.radiusY) ? Math.PI * touch.radiusX * touch.radiusY : 100;
+            const timestamp = Date.now();
+
+            const bpmT = touchDetector.addSample(area, timestamp);
+            if (bpmT) {
+                bpmTouchEl.textContent = bpmT;
+                triggerBeatVibration(); // golpe corto con cada latido táctil
+
+                // Fusionar
+                const confChest = chestDetector.getConfidence();
+                const confTouch = touchDetector.getConfidence();
+                const bpmF = fuseBeats(chestDetector.bpm, bpmT, confChest, confTouch);
+                if (bpmF) {
+                    lastFusionBpm = bpmF;
+                    bpmFusionEl.textContent = bpmF;
+
+                    // Calcular HRV
+                    const hrvChest = chestDetector.getHRV();
+                    const hrvTouch = touchDetector.getHRV();
+                    const hrv = hrvChest > 0 ? hrvChest : hrvTouch; // priorizar el que tenga datos
+                    hrvValueEl.textContent = hrv;
+
+                    // Coherencia
+                    const rpm = breathDetector.rpm || TARGET_RPM;
+                    const coh = calculateCoherence(hrv, rpm, TARGET_RPM);
+                    coherenceEl.textContent = coh;
+
+                    // Confianza promedio
+                    const avgConf = Math.round((confChest + confTouch) / 2);
+                    confidenceEl.textContent = avgConf + '%';
+
+                    // Ley de Winter
+                    const sessionSec = (timestamp - sessionStart) / 1000;
+                    const newFreq = winterLaw(bpmF, hrv, rpm, sessionSec);
+                    updateBinaural(newFreq);
+
+                    // Guardar en CSV
+                    csvData.push({
+                        timestamp: new Date(timestamp).toISOString(),
+                        bpmChest: chestDetector.bpm || 0,
+                        bpmTouch: bpmT,
+                        bpmFusion: bpmF,
+                        rpm: rpm,
+                        hrv: hrv,
+                        binauralHz: newFreq.toFixed(2),
+                        apneaCount: breathDetector.apneaCount,
+                        confidence: avgConf,
+                        touchArea: area.toFixed(2),
+                        accelZ: 0 // no lo tenemos aquí, se podría añadir si se pasa desde handleMotion
+                    });
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            touchZone.classList.remove('active');
+        }
+
+        // ========== CONTROL DE SESIÓN ==========
         function startSession() {
             if (isPlaying) return;
 
-            // Solicitar permiso para sensores de movimiento (iOS)
             if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission()
                     .then(response => {
-                        if (response === 'granted') {
-                            doStart();
-                        } else {
-                            alert('Permiso denegado');
-                        }
-                    })
-                    .catch(console.error);
+                        if (response === 'granted') doStart();
+                        else alert('Permiso necesario');
+                    });
             } else {
                 doStart();
             }
@@ -387,61 +728,63 @@
 
         function doStart() {
             isPlaying = true;
-            sessionStartTime = Date.now();
-            playPauseBtn.textContent = '⏸';
-            statusEl.textContent = 'Midiendo...';
-            csvData = []; // limpiar datos anteriores
+            sessionStart = Date.now();
+            playBtn.textContent = '⏸';
+            csvData = [];
 
             // Iniciar audio
             initAudio();
-            startBinaural(5); // frecuencia inicial
-            binauralEl.textContent = '5.0';
+            startBinaural(5);
 
-            // Iniciar timer
+            // Iniciar vibración
+            startVibration();
+
+            // Registrar sensores
+            window.addEventListener('devicemotion', handleMotion);
+
+            // Timer
             timerInterval = setInterval(() => {
                 if (!isPlaying) return;
-                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-                const mins = Math.floor(elapsed / 60);
-                const secs = elapsed % 60;
-                timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+                const m = Math.floor(elapsed / 60);
+                const s = elapsed % 60;
+                timerEl.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             }, 200);
 
-            // Registrar evento de movimiento
-            window.addEventListener('devicemotion', handleMotion);
+            // Eventos táctiles
+            touchZone.addEventListener('touchstart', handleTouchStart);
+            touchZone.addEventListener('touchmove', handleTouchMove);
+            touchZone.addEventListener('touchend', handleTouchEnd);
+            touchZone.addEventListener('touchcancel', handleTouchEnd);
         }
 
         function stopSession() {
             if (!isPlaying) return;
             isPlaying = false;
-            playPauseBtn.textContent = '▶';
-            statusEl.textContent = 'Sesión detenida';
-            clearInterval(timerInterval);
-            window.removeEventListener('devicemotion', handleMotion);
-            stopBinaural();
+            playBtn.textContent = '▶';
 
-            // Opcional: guardar CSV automáticamente al parar
+            stopAudio();
+            stopVibration();
+            clearInterval(timerInterval);
+
+            window.removeEventListener('devicemotion', handleMotion);
+            touchZone.removeEventListener('touchstart', handleTouchStart);
+            touchZone.removeEventListener('touchmove', handleTouchMove);
+            touchZone.removeEventListener('touchend', handleTouchEnd);
+            touchZone.classList.remove('active');
         }
 
-        // ==================== EXPORTAR CSV ====================
+        // ========== EXPORTAR CSV ==========
         function exportCSV() {
             if (csvData.length === 0) {
-                alert('No hay datos para exportar');
+                alert('No hay datos');
                 return;
             }
-
-            let csvContent = csvHeaders.join(',') + '\n';
-            csvData.forEach(row => {
-                const line = [
-                    row.timestamp,
-                    row.heartRateBPM,
-                    row.rpm,
-                    row.binauralFreq,
-                    row.accelZ
-                ].join(',');
-                csvContent += line + '\n';
+            let csv = CSV_HEADERS.join(',') + '\n';
+            csvData.forEach(r => {
+                csv += `${r.timestamp},${r.bpmChest},${r.bpmTouch},${r.bpmFusion},${r.rpm},${r.hrv},${r.binauralHz},${r.apneaCount},${r.confidence},${r.touchArea},${r.accelZ}\n`;
             });
-
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -450,24 +793,21 @@
             URL.revokeObjectURL(url);
         }
 
-        // ==================== EVENTOS ====================
-        playPauseBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                stopSession();
-            } else {
-                startSession();
-            }
+        // ========== EVENTOS UI ==========
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) stopSession();
+            else startSession();
         });
 
         exportBtn.addEventListener('click', exportCSV);
 
-        // Advertencia para iOS
-        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-            statusEl.textContent = 'Toca PLAY y concede permiso';
-        }
+        // Prevenir scroll al tocar
+        document.body.addEventListener('touchmove', e => {
+            if (isPlaying) e.preventDefault();
+        }, { passive: false });
 
-        // Desactivar scroll mientras se mide
-        window.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        // Inicializar gráfica con animación
+        setInterval(drawRespiratorySignal, 200);
     </script>
 </body>
 </html>
