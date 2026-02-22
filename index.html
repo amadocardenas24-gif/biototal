@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biofeedback Binaural - Monitor PC</title>
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome para iconos (opcional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light {
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        h1 {
+            font-size: 2em;
+            background: linear-gradient(45deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .theme-toggle {
+            background: #2a2a3a;
+            border: none;
+            color: #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        .theme-toggle:hover {
+            background: #3a3a4a;
+        }
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        .card {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 150px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.3s, background 0.3s;
+            border-left: 5px solid #00d4ff;
+        }
+        body.light .card {
+            background: #ffffff;
+            border-left-color: #7b2cbf;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card i {
+            font-size: 2em;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        body.light .card i {
+            color: #7b2cbf;
+        }
+        .card .label {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+        }
+        .card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .trend-indicator {
+            display: inline-block;
+            font-size: 1.5em;
+            margin-left: 10px;
+        }
+        .trend-up { color: #4caf50; }
+        .trend-down { color: #f44336; }
+        .trend-stable { color: #ff9800; }
+
+        .chart-container {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        body.light .chart-container {
+            background: #ffffff;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+        }
+
+        .control-panel {
+            background: #16213e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        body.light .control-panel {
+            background: #ffffff;
+        }
+        .state-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .state-btn {
+            background: #2a2a3a;
+            border: none;
+            color: #e0e0e0;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        body.light .state-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .state-btn.active {
+            border-color: #00d4ff;
+            background: #00d4ff33;
+            color: #00d4ff;
+        }
+        body.light .state-btn.active {
+            border-color: #7b2cbf;
+            background: #7b2cbf33;
+            color: #7b2cbf;
+        }
+        .state-btn:hover {
+            background: #3a3a4a;
+        }
+        .export-btn {
+            background: #4caf50;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .export-btn:hover {
+            background: #45a049;
+        }
+        .timer {
+            font-size: 1.5em;
+            font-family: monospace;
+            background: #2a2a3a;
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+        body.light .timer {
+            background: #e0e0e0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-brain"></i> Neurofeedback Binaural</h1>
+            <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Modo oscuro</button>
+        </header>
+
+        <div class="status-bar">
+            <div class="card">
+                <i class="fas fa-heartbeat"></i>
+                <div class="label">Ritmo Cardíaco</div>
+                <div class="value" id="heartRate">--</div>
+                <span class="trend-indicator" id="hrTrend"></span>
+            </div>
+            <div class="card">
+                <i class="fas fa-chart-line"></i>
+                <div class="label">HRV (RMSSD)</div>
+                <div class="value" id="hrv">--</div>
+                <span class="trend-indicator" id="hrvTrend"></span>
+            </div>
+            <div class="card">
+                <i class="fas fa-lungs"></i>
+                <div class="label">Respiración</div>
+                <div class="value" id="rpm">--</div>
+                <span class="trend-indicator" id="rpmTrend"></span>
+            </div>
+            <div class="card">
+                <i class="fas fa-wave-square"></i>
+                <div class="label">Frec. Binaural</div>
+                <div class="value" id="binaural">--</div>
+                <span class="trend-indicator" id="binauralTrend"></span>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="state-selector">
+                <button class="state-btn" data-state="DELTA">Delta (0.5-4 Hz)</button>
+                <button class="state-btn" data-state="THETA">Theta (4-8 Hz)</button>
+                <button class="state-btn active" data-state="ALPHA">Alpha (8-12 Hz)</button>
+                <button class="state-btn" data-state="BETA">Beta (12-30 Hz)</button>
+            </div>
+            <div class="timer" id="timer">00:00</div>
+            <button class="export-btn" id="exportCSV"><i class="fas fa-download"></i> Exportar CSV</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="mainChart"></canvas>
+        </div>
+        <footer>
+            <p>Sistema de Biofeedback con Ley de Winter | Datos en tiempo real</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuración del socket
+        const socket = io();
+
+        // Elementos DOM
+        const heartRateEl = document.getElementById('heartRate');
+        const hrvEl = document.getElementById('hrv');
+        const rpmEl = document.getElementById('rpm');
+        const binauralEl = document.getElementById('binaural');
+        const hrTrend = document.getElementById('hrTrend');
+        const hrvTrend = document.getElementById('hrvTrend');
+        const rpmTrend = document.getElementById('rpmTrend');
+        const binauralTrend = document.getElementById('binauralTrend');
+        const timerEl = document.getElementById('timer');
+        const exportBtn = document.getElementById('exportCSV');
+        const themeToggle = document.getElementById('themeToggle');
+        const stateBtns = document.querySelectorAll('.state-btn');
+
+        // Variables para gráfica
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const maxPoints = 60; // 60 puntos = 1 minuto si llega cada segundo
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    { label: 'BPM', data: [], borderColor: '#ff6384', backgroundColor: 'rgba(255,99,132,0.1)', yAxisID: 'y', tension: 0.2 },
+                    { label: 'HRV (ms)', data: [], borderColor: '#36a2eb', backgroundColor: 'rgba(54,162,235,0.1)', yAxisID: 'y1', tension: 0.2 },
+                    { label: 'RPM', data: [], borderColor: '#ffce56', backgroundColor: 'rgba(255,206,86,0.1)', yAxisID: 'y2', tension: 0.2 },
+                    { label: 'Binaural (Hz)', data: [], borderColor: '#4bc0c0', backgroundColor: 'rgba(75,192,192,0.1)', yAxisID: 'y3', tension: 0.2 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                stacked: false,
+                plugins: {
+                    legend: { labels: { color: getComputedStyle(document.body).color } }
+                },
+                scales: {
+                    x: { ticks: { color: '#aaa' }, grid: { color: '#333' } },
+                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'BPM' }, ticks: { color: '#ff6384' } },
+                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'HRV (ms)' }, grid: { drawOnChartArea: false }, ticks: { color: '#36a2eb' } },
+                    y2: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'RPM' }, grid: { drawOnChartArea: false }, ticks: { color: '#ffce56' } },
+                    y3: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Hz' }, grid: { drawOnChartArea: false }, ticks: { color: '#4bc0c0' } }
+                }
+            }
+        });
+
+        // Historial para tendencias (últimos 5 valores)
+        let history = {
+            hr: [],
+            hrv: [],
+            rpm: [],
+            binaural: []
+        };
+
+        // Almacén de datos para exportar
+        let dataLog = [];
+
+        // Actualizar tendencias
+        function updateTrend(valueArray, element) {
+            if (valueArray.length < 2) {
+                element.innerHTML = '';
+                return;
+            }
+            const last = valueArray[valueArray.length - 1];
+            const prev = valueArray[valueArray.length - 2];
+            const diff = last - prev;
+            if (diff > 0.5) {
+                element.innerHTML = '<i class="fas fa-arrow-up trend-up"></i>';
+            } else if (diff < -0.5) {
+                element.innerHTML = '<i class="fas fa-arrow-down trend-down"></i>';
+            } else {
+                element.innerHTML = '<i class="fas fa-minus trend-stable"></i>';
+            }
+        }
+
+        // Manejar datos entrantes
+        socket.on('nuevo_dato', (data) => {
+            // Actualizar valores numéricos
+            heartRateEl.textContent = data.heartRate ? data.heartRate.toFixed(1) + ' BPM' : '--';
+            hrvEl.textContent = data.hrv ? data.hrv.toFixed(1) + ' ms' : '--';
+            rpmEl.textContent = data.rpm ? data.rpm.toFixed(1) + ' RPM' : '--';
+            binauralEl.textContent = data.binauralFreq ? data.binauralFreq.toFixed(2) + ' Hz' : '--';
+
+            // Almacenar en historial
+            if (data.heartRate) {
+                history.hr.push(data.heartRate);
+                if (history.hr.length > 5) history.hr.shift();
+            }
+            if (data.hrv) {
+                history.hrv.push(data.hrv);
+                if (history.hrv.length > 5) history.hrv.shift();
+            }
+            if (data.rpm) {
+                history.rpm.push(data.rpm);
+                if (history.rpm.length > 5) history.rpm.shift();
+            }
+            if (data.binauralFreq) {
+                history.binaural.push(data.binauralFreq);
+                if (history.binaural.length > 5) history.binaural.shift();
+            }
+
+            // Actualizar tendencias
+            updateTrend(history.hr, hrTrend);
+            updateTrend(history.hrv, hrvTrend);
+            updateTrend(history.rpm, rpmTrend);
+            updateTrend(history.binaural, binauralTrend);
+
+            // Actualizar gráfica
+            const now = new Date().toLocaleTimeString();
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(data.heartRate || 0);
+            chart.data.datasets[1].data.push(data.hrv || 0);
+            chart.data.datasets[2].data.push(data.rpm || 0);
+            chart.data.datasets[3].data.push(data.binauralFreq || 0);
+
+            if (chart.data.labels.length > maxPoints) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(ds => ds.data.shift());
+            }
+            chart.update();
+
+            // Guardar para exportar
+            dataLog.push({
+                timestamp: new Date().toISOString(),
+                heartRate: data.heartRate,
+                hrv: data.hrv,
+                rpm: data.rpm,
+                binauralFreq: data.binauralFreq,
+                contactArea: data.contactArea,
+                accelZ: data.accelZ
+            });
+        });
+
+        // Temporizador de sesión (simulado, idealmente recibiría tiempo real del móvil)
+        let seconds = 0;
+        setInterval(() => {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timerEl.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        }, 1000);
+
+        // Exportar CSV
+        exportBtn.addEventListener('click', () => {
+            if (dataLog.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            const headers = ['timestamp', 'heartRate', 'hrv', 'rpm', 'binauralFreq', 'contactArea', 'accelZ'];
+            const csvRows = [];
+            csvRows.push(headers.join(','));
+            for (const row of dataLog) {
+                const values = headers.map(header => JSON.stringify(row[header] || ''));
+                csvRows.push(values.join(','));
+            }
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `biofeedback_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Cambiar tema
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light');
+            const icon = themeToggle.querySelector('i');
+            if (document.body.classList.contains('light')) {
+                icon.className = 'fas fa-sun';
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i> Modo claro';
+                Chart.defaults.color = '#333';
+            } else {
+                icon.className = 'fas fa-moon';
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i> Modo oscuro';
+                Chart.defaults.color = '#e0e0e0';
+            }
+            chart.update();
+        });
+
+        // Selección de estado a inducir (envía comando al servidor, que luego puede reenviar al móvil)
+        stateBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                stateBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const state = btn.getAttribute('data-state');
+                socket.emit('set_target_state', { state: state });
+                // Opcional: mostrar notificación
+            });
+        });
+
+        // Conexión WebSocket
+        socket.on('connect', () => {
+            console.log('Conectado al servidor');
+        });
+        socket.on('disconnect', () => {
+            console.log('Desconectado');
+        });
+    </script>
+</body>
+</html>
